@@ -1,0 +1,622 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>The Study Drawer</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=IBM+Plex+Mono:wght@400;500&family=Instrument+Sans:wght@400;500;600;700&display=swap">
+<style>
+/* Layout: a navy header band with two tabs (Study Drawer, Coach) over a ruled-paper page; the Drawer is paper and ink, the Coach is a dark panel. */
+:root{
+  --bg:#ECE8DA; --rule:rgba(27,42,59,.06); --card:#FBF9F2; --ink:#1B2A3B; --ink-2:#4B5B6C; --line:#1B2A3B; --soft:#DDD8C6;
+  --navy:#1B2A3B; --navy-ink:#F3F0E4; --navy-2:#9FB0C2; --lime:#D3E04F; --rust:#BE4128; --rust-ink:#FFFFFF; --ok:#2F7D4F; --bad:#B3341F;
+  --shadow:rgba(27,42,59,.9);
+  --c-bg:#0B1118; --c-card:#131B26; --c-line:#263445; --c-ink:#E8EAF0; --c-mute:#8A97A8; --c-accent:#5578E0; --c-field:#0E151E;
+  --f-ui:"Instrument Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --f-display:"Fraunces",Georgia,"Times New Roman",serif;
+  --f-mono:"IBM Plex Mono",ui-monospace,Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#0E141C; --rule:rgba(233,230,218,.045); --card:#151E29; --ink:#E9E6DA; --ink-2:#A3B0BE; --line:#3A4A5C; --soft:#233140;
+  --navy:#0A0F15; --navy-ink:#EDEADF; --navy-2:#8FA0B3; --rust:#D9573D; --ok:#5FBF86; --bad:#F08A76; --shadow:rgba(0,0,0,.7); color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0E141C; --rule:rgba(233,230,218,.045); --card:#151E29; --ink:#E9E6DA; --ink-2:#A3B0BE; --line:#3A4A5C; --soft:#233140;
+  --navy:#0A0F15; --navy-ink:#EDEADF; --navy-2:#8FA0B3; --rust:#D9573D; --ok:#5FBF86; --bad:#F08A76; --shadow:rgba(0,0,0,.7); color-scheme:dark}
+
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.55 var(--f-ui);
+  background-image:repeating-linear-gradient(to bottom,transparent 0,transparent 31px,var(--rule) 31px,var(--rule) 32px);
+  padding-left:max(0px,env(safe-area-inset-left,0px));padding-right:max(0px,env(safe-area-inset-right,0px))}
+button,input,textarea{font:inherit;color:inherit}
+button{cursor:pointer}
+:focus-visible{outline:2px solid var(--c-accent);outline-offset:2px}
+.mono{font-family:var(--f-mono);text-transform:uppercase;letter-spacing:.09em;font-size:11.5px}
+[hidden]{display:none!important}
+
+/* header band */
+.top{background:var(--navy);color:var(--navy-ink);padding-block:18px 0;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.top-in{max-width:780px;margin:0 auto}
+.brand{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap}
+.brand h1{font:700 26px/1.1 var(--f-ui);letter-spacing:-.02em;margin:0}
+.brand .mono{color:var(--navy-2);border:1px solid rgba(243,240,228,.25);padding:3px 8px;border-radius:4px}
+.tabs{display:flex;gap:4px;margin-top:16px}
+.tab{background:transparent;border:0;color:var(--navy-2);padding:11px 18px;border-radius:10px 10px 0 0;font-weight:600;letter-spacing:.01em}
+.tab[aria-selected="true"]{background:var(--bg);color:var(--ink)}
+body.on-coach .tab[aria-selected="true"]{background:var(--c-bg);color:var(--c-ink)}
+body.on-coach{background:var(--c-bg);background-image:none}
+
+.wrap{max-width:780px;margin:0 auto;padding-block:26px 56px;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+
+/* stats */
+.stats{display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+.stat{background:var(--card);border:2px solid var(--line);border-radius:8px;padding:8px 16px;box-shadow:3px 3px 0 var(--shadow);min-width:84px;text-align:center}
+.stat .mono{display:block;color:var(--ink-2);font-size:11px}
+.stat b{font:600 28px/1.1 var(--f-display);font-variant-numeric:tabular-nums}
+.initials{width:56px;height:56px;border-radius:50%;background:var(--navy);color:var(--navy-ink);border:0;text-align:center;font:600 18px var(--f-ui);letter-spacing:.04em;text-transform:uppercase}
+.rule{height:3px;background:var(--ink);margin:22px 0 20px;border:0}
+
+.label{color:var(--ink-2);margin:0 0 12px}
+.empty{color:var(--ink-2);margin:0 0 4px}
+
+/* deck list */
+.decks{display:grid;gap:10px;margin:0}
+.deck{display:grid;grid-template-columns:1fr auto;gap:4px 14px;text-align:left;background:var(--card);border:2px solid var(--line);border-radius:10px;padding:14px 16px;width:100%;box-shadow:3px 3px 0 var(--shadow);transition:transform .12s}
+.deck:hover{transform:translate(-1px,-1px)}
+.deck h3{margin:0;font:600 19px/1.25 var(--f-display)}
+.deck .meta{color:var(--ink-2)}
+.deck .go{align-self:center;grid-row:1/3;grid-column:2;font:500 12px var(--f-mono);text-transform:uppercase;letter-spacing:.08em;color:var(--rust)}
+
+/* level */
+.level{background:var(--navy);color:var(--navy-ink);border-radius:10px;padding:20px 22px;margin:26px 0}
+.level h2{margin:0 0 4px;font:600 26px/1.15 var(--f-display)}
+.level .mono{color:var(--navy-2);text-transform:none;letter-spacing:.02em;font-size:13px}
+.bar{height:9px;border-radius:5px;background:rgba(243,240,228,.16);margin-top:16px;overflow:hidden}
+.bar i{display:block;height:100%;background:var(--lime);border-radius:5px;transition:width .5s}
+
+/* entry card */
+.entry{background:var(--card);border:2px solid var(--line);border-radius:12px;padding:20px}
+.entry-head{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:16px}
+.seg{display:inline-flex;border:2px solid var(--line);border-radius:999px;overflow:hidden}
+.seg button{border:0;background:transparent;padding:9px 16px;font:500 12px var(--f-mono);text-transform:uppercase;letter-spacing:.09em}
+.seg button[aria-pressed="true"]{background:var(--navy);color:var(--navy-ink)}
+.field{width:100%;background:transparent;border:0;border-bottom:2px solid var(--line);padding:10px 2px;font:600 20px var(--f-ui);margin-bottom:16px;border-radius:0}
+.field::placeholder,.paste::placeholder{color:var(--ink-2);opacity:.65}
+.paste{width:100%;min-height:200px;resize:vertical;background:transparent;border:1.5px dashed var(--ink-2);border-radius:6px;padding:14px;font:14px/1.6 var(--f-mono)}
+.drop{border:1.5px dashed var(--ink-2);border-radius:6px;padding:18px;display:grid;gap:14px}
+.drop p{margin:0;color:var(--ink-2)}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.thumbs{display:flex;gap:10px;flex-wrap:wrap}
+.thumb{position:relative;width:86px;height:86px;border:2px solid var(--line);border-radius:6px;overflow:hidden;background:var(--soft)}
+.thumb img{width:100%;height:100%;object-fit:cover;display:block}
+.thumb button{position:absolute;top:3px;right:3px;width:22px;height:22px;border-radius:50%;border:0;background:var(--navy);color:var(--navy-ink);font-size:13px;line-height:1;padding:0}
+.btn{border:2px solid var(--line);background:var(--card);color:var(--ink);padding:10px 16px;border-radius:8px;font-weight:600;box-shadow:2px 2px 0 var(--shadow);transition:transform .1s}
+.btn:active{transform:translate(2px,2px);box-shadow:none}
+.btn[disabled]{opacity:.5;cursor:not-allowed}
+.btn.quiet{box-shadow:none;border-color:var(--soft);color:var(--ink-2);font-weight:500}
+.btn.primary{background:var(--rust);border-color:var(--rust);color:var(--rust-ink);box-shadow:3px 3px 0 var(--shadow);padding:13px 22px;font-size:16px}
+.note{color:var(--ink-2);font:12.5px var(--f-mono);margin:16px 0 12px}
+.err{border:2px solid var(--bad);color:var(--bad);border-radius:8px;padding:10px 14px;margin-top:14px;background:transparent;font-weight:500}
+
+/* deck view */
+.deck-top{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}
+.deck-title{font:600 clamp(26px,5vw,36px)/1.15 var(--f-display);margin:16px 0 4px;text-wrap:balance}
+.sections{display:flex;gap:6px;overflow-x:auto;margin:20px 0 0;padding-bottom:2px;border-bottom:3px solid var(--ink);scrollbar-width:none}
+.sections::-webkit-scrollbar{display:none}
+.sec{flex:none;background:transparent;border:2px solid transparent;border-bottom:0;border-radius:8px 8px 0 0;padding:10px 14px;font:500 12px var(--f-mono);text-transform:uppercase;letter-spacing:.08em;color:var(--ink-2)}
+.sec[aria-selected="true"]{background:var(--ink);color:var(--bg)}
+.panel{background:var(--card);border:2px solid var(--line);border-top:0;border-radius:0 0 12px 12px;padding:22px 20px;min-height:260px}
+.panel h3{font:600 22px/1.25 var(--f-display);margin:0 0 10px}
+.panel p{margin:0 0 14px;max-width:66ch}
+.lede{font:500 19px/1.55 var(--f-display);max-width:60ch}
+.points{margin:16px 0;padding:0;list-style:none;display:grid;gap:10px}
+.points li{display:grid;grid-template-columns:auto 1fr;gap:12px;max-width:66ch}
+.points li::before{content:"";width:8px;height:8px;margin-top:9px;background:var(--rust)}
+.callout{background:var(--navy);color:var(--navy-ink);border-radius:8px;padding:16px 18px;margin-top:18px}
+.callout .mono{color:var(--lime);display:block;margin-bottom:6px}
+.callout p{margin:0}
+.regen{margin-top:20px}
+.loading{display:grid;gap:12px;justify-items:start;padding:20px 0}
+.loading .bar{width:100%;background:var(--soft)}
+.loading .bar i{width:35%;background:var(--rust);animation:slide 1.4s ease-in-out infinite}
+@keyframes slide{0%{margin-left:-35%}100%{margin-left:100%}}
+.story p{font:400 17px/1.75 var(--f-display);max-width:60ch}
+.decoder{margin-top:22px;border-top:2px solid var(--ink);padding-top:14px}
+.pair{display:grid;grid-template-columns:1fr 1fr;gap:6px 16px;padding:10px 0;border-bottom:1px solid var(--soft)}
+.pair span:first-child{font-weight:600}
+@media (max-width:520px){.pair{grid-template-columns:1fr}}
+
+/* flashcards */
+.fc-count{color:var(--ink-2);margin-bottom:12px}
+.fc{perspective:1200px;margin-bottom:16px}
+.fc-face{min-height:230px;border:2px solid var(--line);border-radius:12px;display:grid;place-items:center;padding:28px 22px;text-align:center;width:100%;background:var(--card);box-shadow:4px 4px 0 var(--shadow)}
+.fc-face.back{background:var(--navy);color:var(--navy-ink)}
+.fc-face .mono{display:block;margin-bottom:12px;opacity:.7}
+.fc-face .txt{font:600 clamp(19px,3.4vw,24px)/1.35 var(--f-display);text-wrap:balance}
+.fc-known{margin-top:10px;color:var(--ok)}
+
+/* quiz */
+.q-text{font:600 21px/1.35 var(--f-display);margin:8px 0 16px;max-width:56ch}
+.opts{display:grid;gap:10px}
+.opt{display:grid;grid-template-columns:30px 1fr;gap:10px;align-items:start;text-align:left;border:2px solid var(--line);background:var(--card);border-radius:8px;padding:12px 14px}
+.opt b{font:500 13px var(--f-mono)}
+.opt.right{border-color:var(--ok);background:color-mix(in srgb,var(--ok) 14%,var(--card))}
+.opt.wrong{border-color:var(--bad);background:color-mix(in srgb,var(--bad) 12%,var(--card))}
+.why{margin-top:14px;border-left:4px solid var(--ink);padding:4px 0 4px 14px}
+.score{font:600 54px/1 var(--f-display);margin:8px 0}
+
+/* terms, tricks, practice */
+.terms{display:grid;gap:0;margin:0}
+.terms div{display:grid;grid-template-columns:minmax(120px,1fr) 2fr;gap:6px 18px;padding:12px 0;border-bottom:1px solid var(--soft)}
+.terms dt{font-weight:700;margin:0}
+.terms dd{margin:0}
+@media (max-width:520px){.terms div{grid-template-columns:1fr}}
+.trick{padding:14px 0;border-bottom:1px solid var(--soft)}
+.trick .mono{color:var(--rust);display:block;margin-bottom:4px}
+.trick p{margin:0}
+.pq{padding:16px 0;border-bottom:1px solid var(--soft)}
+.pq textarea{width:100%;min-height:90px;margin:10px 0;background:transparent;border:1.5px dashed var(--ink-2);border-radius:6px;padding:10px;font:14px/1.55 var(--f-ui);resize:vertical}
+.model{background:var(--soft);border-radius:6px;padding:12px 14px;margin-top:8px}
+
+.toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--navy);color:var(--lime);padding:9px 16px;border-radius:999px;font:500 13px var(--f-mono);z-index:20;opacity:0;pointer-events:none;transition:opacity .2s}
+.toast.show{opacity:1}
+
+/* coach */
+.coach{color:var(--c-ink)}
+.coach h2{font:700 clamp(28px,6vw,40px)/1.15 var(--f-ui);letter-spacing:-.02em;text-align:center;margin:8px 0 10px;text-wrap:balance}
+.coach .sub{color:var(--c-mute);text-align:center;margin:0 auto 24px;max-width:46ch}
+.chips{display:flex;gap:10px;flex-wrap:wrap;justify-content:center}
+.chip{background:var(--c-card);border:1px solid var(--c-line);color:var(--c-ink);border-radius:999px;padding:10px 20px;font-weight:500}
+.chip[aria-pressed="true"]{border-color:var(--c-accent);background:color-mix(in srgb,var(--c-accent) 22%,var(--c-card))}
+.chip.act{border-radius:12px;padding:9px 16px;font-size:14px}
+.meter{background:var(--c-card);border:1px solid var(--c-line);border-radius:14px;padding:16px 18px;margin:26px 0 18px}
+.meter-top{display:flex;justify-content:space-between;font-weight:500;margin-bottom:10px}
+.meter-top b{font-variant-numeric:tabular-nums}
+.meter .track{height:10px;border-radius:5px;background:var(--c-line);overflow:hidden}
+.meter .track i{display:block;height:100%;width:0;background:var(--lime);border-radius:5px;transition:width .5s}
+.meter p{margin:10px 0 0;color:var(--c-mute);font-size:13px}
+.thread{display:grid;gap:12px;margin-bottom:18px}
+.msg{max-width:92%;padding:12px 16px;border-radius:14px;white-space:pre-wrap;overflow-wrap:anywhere}
+.msg.me{justify-self:end;background:color-mix(in srgb,var(--c-accent) 26%,var(--c-card));border:1px solid color-mix(in srgb,var(--c-accent) 45%,var(--c-line))}
+.msg.ai{justify-self:start;background:var(--c-card);border:1px solid var(--c-line)}
+.msg .who{display:block;color:var(--c-mute);font:500 11px var(--f-mono);text-transform:uppercase;letter-spacing:.09em;margin-bottom:4px}
+.composer{background:var(--c-card);border:1px solid var(--c-line);border-radius:14px;padding:16px;display:grid;gap:14px}
+.composer textarea{width:100%;min-height:120px;resize:vertical;background:var(--c-field);border:1px solid var(--c-line);border-radius:12px;padding:14px;color:var(--c-ink);font:16px/1.5 var(--f-ui)}
+.composer textarea::placeholder{color:var(--c-mute)}
+.send{background:var(--c-accent);color:#fff;border:0;border-radius:12px;padding:15px;font-weight:700;letter-spacing:.02em}
+.send[disabled]{opacity:.55}
+.coach .err{margin-top:0}
+.coach .link{background:none;border:0;color:var(--c-mute);text-decoration:underline;padding:0}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+
+<header class="top">
+  <div class="top-in">
+    <div class="brand"><h1>The Study Drawer</h1><span class="mono">File. Flip. Learn.</span></div>
+    <div class="tabs" role="tablist" aria-label="Sections">
+      <button class="tab" role="tab" id="tab-drawer" aria-selected="true" data-view="drawer">Study Drawer</button>
+      <button class="tab" role="tab" id="tab-coach" aria-selected="false" data-view="coach">Coach</button>
+    </div>
+  </div>
+</header>
+
+<main class="wrap">
+  <!-- STUDY DRAWER -->
+  <section id="view-drawer" role="tabpanel" aria-labelledby="tab-drawer">
+    <div id="home">
+      <div class="stats">
+        <div class="stat"><span class="mono">Streak</span><b id="st-streak">0</b></div>
+        <div class="stat"><span class="mono">XP</span><b id="st-xp">0</b></div>
+        <input class="initials" id="initials" maxlength="2" value="AM" aria-label="Your initials">
+      </div>
+      <hr class="rule">
+      <p class="label mono">Drawer / Your decks</p>
+      <div id="decks" class="decks"></div>
+
+      <div class="level" aria-live="polite">
+        <h2 id="lv-title">Level 1 Newcomer</h2>
+        <span class="mono" id="lv-sub">250 XP to Level 2</span>
+        <div class="bar"><i id="lv-bar" style="width:0"></i></div>
+      </div>
+
+      <div class="entry">
+        <div class="entry-head">
+          <span class="label mono" style="margin:0">New entry</span>
+          <div class="seg" role="group" aria-label="Input method">
+            <button id="m-type" aria-pressed="true">Type it</button>
+            <button id="m-photo" aria-pressed="false">Scan a photo</button>
+          </div>
+        </div>
+        <input class="field" id="title-in" placeholder="Title this deck (optional)" maxlength="80" autocomplete="off">
+        <div id="p-type"><textarea class="paste" id="text-in" placeholder="Paste your chapter, lecture notes, or anything you need to learn..."></textarea></div>
+        <div id="p-photo" class="drop" hidden>
+          <p>Photograph each page of your chapter or notes. Clear light and flat pages give the best result.</p>
+          <div class="row">
+            <button class="btn" id="b-cam" type="button">Take a photo</button>
+            <button class="btn" id="b-file" type="button">Choose from files</button>
+          </div>
+          <input type="file" id="f-cam" accept="image/*" capture="environment" hidden>
+          <input type="file" id="f-file" accept="image/*" multiple hidden>
+          <div class="thumbs" id="thumbs"></div>
+          <p id="photo-note" class="mono" style="font-size:11.5px"></p>
+        </div>
+        <p class="note">Generates a summary, a story, flashcards, a quiz and more. Takes about 10 to 30 seconds.</p>
+        <div class="row">
+          <button class="btn primary" id="stamp">Stamp &amp; Generate</button>
+          <button class="btn quiet" id="stop" hidden>Stop</button>
+        </div>
+        <div id="stamp-status" class="note" hidden></div>
+        <div id="stamp-err" class="err" role="alert" hidden></div>
+      </div>
+    </div>
+
+    <div id="deckview" hidden></div>
+  </section>
+
+  <!-- COACH -->
+  <section id="view-coach" class="coach" role="tabpanel" aria-labelledby="tab-coach" hidden>
+    <h2>How can I help you today?</h2>
+    <p class="sub">Tell me what you are working on. I will guide you step by step, and you do the writing.</p>
+    <div class="chips" id="modes" role="group" aria-label="Type of work">
+      <button class="chip" aria-pressed="false">Speech</button>
+      <button class="chip" aria-pressed="false">Essay</button>
+      <button class="chip" aria-pressed="true">Homework</button>
+      <button class="chip" aria-pressed="false">Project</button>
+      <button class="chip" aria-pressed="false">Presentation</button>
+    </div>
+    <div class="meter">
+      <div class="meter-top"><span>Human contribution</span><b id="pct">0%</b></div>
+      <div class="track"><i id="pct-bar"></i></div>
+      <p>Your share of the words in this session. Write more yourself to raise it.</p>
+    </div>
+    <div class="thread" id="thread" aria-live="polite"></div>
+    <div class="composer">
+      <div class="chips" id="acts" style="justify-content:flex-start" role="group" aria-label="What kind of help">
+        <button class="chip act" data-act="Hint" aria-pressed="false">Hint</button>
+        <button class="chip act" data-act="Example" aria-pressed="false">Example</button>
+        <button class="chip act" data-act="Check My Work" aria-pressed="false">Check My Work</button>
+        <button class="chip act" data-act="Improve My Idea" aria-pressed="false">Improve My Idea</button>
+      </div>
+      <textarea id="c-in" placeholder="Tell me what you want to do..."></textarea>
+      <div id="c-err" class="err" role="alert" hidden></div>
+      <button class="send" id="c-send">Send</button>
+      <div class="row" style="justify-content:space-between">
+        <button class="link" id="c-stop" hidden>Stop</button>
+        <button class="link" id="c-reset">Start a new session</button>
+      </div>
+    </div>
+  </section>
+</main>
+<div class="toast" id="toast" role="status"></div>
+
+<script>
+(function(){
+"use strict";
+const $=(s,r=document)=>r.querySelector(s);
+function h(tag,attrs,...kids){const e=document.createElement(tag);for(const [k,v] of Object.entries(attrs||{})){if(v==null||v===false)continue;if(k==="class")e.className=v;else if(k==="text")e.textContent=v;else if(k.startsWith("on"))e.addEventListener(k.slice(2),v);else e.setAttribute(k,v===true?"":v)}for(const kid of kids.flat()){if(kid==null||kid===false)continue;e.append(kid.nodeType?kid:document.createTextNode(String(kid)))}return e}
+const words=s=>(String(s).trim().match(/\S+/g)||[]).length;
+
+/* ---------- storage ---------- */
+const KEY="studydrawer.v1";
+let state={xp:0,streak:0,last:"",initials:"AM",decks:[]};
+try{const s=JSON.parse(localStorage.getItem(KEY)||"null");if(s&&typeof s==="object")state=Object.assign(state,s)}catch(e){}
+function save(){try{localStorage.setItem(KEY,JSON.stringify(state))}catch(e){}}
+
+const pad=n=>String(n).padStart(2,"0");
+const today=()=>{const d=new Date();return d.getFullYear()+"-"+pad(d.getMonth()+1)+"-"+pad(d.getDate())};
+const dayDiff=(a,b)=>Math.round((new Date(b+"T00:00")-new Date(a+"T00:00"))/864e5);
+const streakNow=()=>state.last&&dayDiff(state.last,today())<=1?state.streak:0;
+const TITLES=["Newcomer","Reader","Student","Apprentice","Scholar","Analyst","Fellow","Master","Sage"];
+const PER=250;
+function paintStats(){
+  $("#st-streak").textContent=streakNow();
+  $("#st-xp").textContent=state.xp;
+  const lv=1+Math.floor(state.xp/PER);
+  $("#lv-title").textContent="Level "+lv+" "+TITLES[Math.min(lv-1,TITLES.length-1)];
+  $("#lv-sub").textContent=(PER-state.xp%PER)+" XP to Level "+(lv+1);
+  $("#lv-bar").style.width=(state.xp%PER)/PER*100+"%";
+}
+let toastT;
+function toast(t){const el=$("#toast");el.textContent=t;el.classList.add("show");clearTimeout(toastT);toastT=setTimeout(()=>el.classList.remove("show"),1600)}
+function award(n){
+  const t=today();
+  if(state.last!==t){const d=state.last?dayDiff(state.last,t):99;state.streak=d===1?state.streak+1:1;state.last=t}
+  state.xp+=n;save();paintStats();toast("+"+n+" XP");
+}
+const ini=$("#initials");ini.value=state.initials||"AM";
+ini.addEventListener("input",()=>{state.initials=ini.value.toUpperCase();save()});
+
+/* ---------- Claude ---------- */
+let sample=null,limits=null;
+const ERR={not_granted:"Claude access was not allowed for this page. Reload and allow it to continue.",sampling_disabled:"Claude is not available for this account.",rate_limited:"Too many requests just now. Wait a minute and try again.",session_expired:"Your session expired. Sign in again and retry.",image_rejected:"One of the photos could not be read. Try a sharper, smaller photo.",refused:"This content could not be processed. Try different material.",empty_completion:"No answer came back. Try again with a little more text.",invalid_json:"The answer arrived in an unexpected shape. Press try again.",prompt_too_large:"That is too much text at once. Split the chapter into parts.",upstream_error:"The connection dropped. Try again.",images_unavailable:"Photo scanning is not available here. Type or paste the text instead."};
+const errText=e=>ERR[e&&e.code]||"Something went wrong. Try again.";
+function paintAvail(){
+  const noAI=!sample;
+  const noImg=!limits||!limits.images;
+  $("#stamp").disabled=noAI;
+  $("#photo-note").textContent=noImg?(sample?"Photo scanning is not available in this view. Type or paste the text instead.":""):"Up to "+limits.images.maxCount+" photos per deck.";
+  $("#b-cam").disabled=$("#b-file").disabled=noImg;
+  $("#c-send").disabled=noAI;
+  if(noAI){showErr($("#stamp-err"),"Claude is not connected in this view, so decks cannot be generated here.")}
+}
+(async()=>{
+  try{sample=window.claude&&await window.claude.use("sample")}catch(e){sample=null}
+  if(sample){try{limits=await sample.limits()}catch(e){limits=null}}
+  paintAvail();
+})();
+function showErr(el,t){el.textContent=t;el.hidden=!t}
+const ask=(prompt,opts)=>sample.json(prompt,Object.assign({cache:false,modelTier:"default"},opts));
+
+/* ---------- views ---------- */
+const views={drawer:$("#view-drawer"),coach:$("#view-coach")};
+function setView(v){
+  if(!views[v])v="drawer";
+  for(const k in views){views[k].hidden=k!==v;$("#tab-"+k).setAttribute("aria-selected",String(k===v))}
+  document.body.classList.toggle("on-coach",v==="coach");
+  try{if(location.hash!=="#"+v)history.replaceState(null,"","#"+v)}catch(e){}
+}
+document.querySelectorAll(".tab").forEach(b=>b.addEventListener("click",()=>setView(b.dataset.view)));
+window.addEventListener("hashchange",()=>setView(location.hash.slice(1)));
+
+/* ---------- home ---------- */
+function fmtDate(t){try{return new Date(t).toLocaleDateString(undefined,{day:"numeric",month:"short"})}catch(e){return""}}
+function paintDecks(){
+  const box=$("#decks");box.replaceChildren();
+  if(!state.decks.length){box.append(h("p",{class:"empty",text:"Empty drawer. Generate a deck to file it here."}));return}
+  for(const d of state.decks){
+    const n=Object.keys(d.sections||{}).length;
+    box.append(h("button",{class:"deck",onclick:()=>openDeck(d.id)},
+      h("h3",{text:d.title}),
+      h("span",{class:"mono meta",text:[d.subject,fmtDate(d.created),n+" of 7 sections"].filter(Boolean).join("  /  ")}),
+      h("span",{class:"go",text:"Open"})));
+  }
+}
+
+let mode="type",files=[];
+function setMode(m){
+  mode=m;$("#m-type").setAttribute("aria-pressed",String(m==="type"));$("#m-photo").setAttribute("aria-pressed",String(m==="photo"));
+  $("#p-type").hidden=m!=="type";$("#p-photo").hidden=m!=="photo";
+}
+$("#m-type").onclick=()=>setMode("type");$("#m-photo").onclick=()=>setMode("photo");
+$("#b-cam").onclick=()=>$("#f-cam").click();$("#b-file").onclick=()=>$("#f-file").click();
+function addFiles(list){
+  const max=(limits&&limits.images&&limits.images.maxCount)||5;
+  for(const f of list){if(files.length>=max)break;files.push({file:f,url:URL.createObjectURL(f)})}
+  paintThumbs();
+}
+$("#f-cam").onchange=e=>{addFiles(e.target.files);e.target.value=""};
+$("#f-file").onchange=e=>{addFiles(e.target.files);e.target.value=""};
+function paintThumbs(){
+  const t=$("#thumbs");t.replaceChildren();
+  files.forEach((f,i)=>t.append(h("div",{class:"thumb"},h("img",{src:f.url,alt:"Page "+(i+1)}),h("button",{type:"button","aria-label":"Remove page "+(i+1),onclick:()=>{URL.revokeObjectURL(f.url);files.splice(i,1);paintThumbs()}},"×"))));
+}
+
+let ctl=null;
+$("#stop").onclick=()=>ctl&&ctl.abort();
+$("#stamp").onclick=async()=>{
+  if(!sample)return;
+  const err=$("#stamp-err");showErr(err,"");
+  const text=$("#text-in").value.trim();
+  if(mode==="type"&&!text){showErr(err,"Type or paste something first. A single sentence or a topic name is enough.");return}
+  if(mode==="photo"&&!files.length){showErr(err,"Add at least one photo of your chapter or notes.");return}
+  const typed=mode==="type";
+  const prompt=
+    "You are building study material for a student. If the source is very short, such as one sentence or just a topic name, treat it as the topic and build accurate material from it using your own knowledge.\n"+
+    (typed?"The source text follows.\n\n---\n"+text.slice(0,60000)+"\n---\n":"The source is in the attached photos of textbook pages or notes. Read them in order.\n")+
+    "\nReply with only one JSON object of this exact shape:\n"+
+    '{"title": string (at most 6 words), "subject": string (one or two words, such as Biology), "transcript": '+(typed?'""':'string (all legible text from the photos, faithfully transcribed, in reading order)')+
+    ', "overview": string (3 to 4 plain sentences), "key_points": [6 to 8 strings, each one complete idea], "takeaway": string (one sentence to remember)}\n'+
+    "Use plain text. Do not use emoji.";
+  ctl=new AbortController();
+  $("#stamp").disabled=true;$("#stop").hidden=false;
+  const st=$("#stamp-status");st.hidden=false;st.textContent="Reading your material and stamping the deck...";
+  try{
+    const r=await ask(prompt,{signal:ctl.signal,images:typed?undefined:files.map(f=>f.file)});
+    if(!r||typeof r!=="object"||!Array.isArray(r.key_points))throw {code:"invalid_json"};
+    const transcript=typed?text:String(r.transcript||"");
+    if(!transcript.trim())throw {code:"empty_completion"};
+    const deck={id:"d"+Date.now(),title:($("#title-in").value.trim()||String(r.title||"Untitled deck")).slice(0,80),subject:String(r.subject||""),created:Date.now(),transcript:transcript,
+      sections:{summary:{overview:String(r.overview||""),key_points:r.key_points.map(String),takeaway:String(r.takeaway||"")}},known:{},quiz:{}};
+    state.decks.unshift(deck);save();award(20);
+    $("#text-in").value="";$("#title-in").value="";files.forEach(f=>URL.revokeObjectURL(f.url));files=[];paintThumbs();
+    paintDecks();openDeck(deck.id);
+  }catch(e){if(!e||e.code!=="cancelled")showErr(err,errText(e))}
+  finally{$("#stamp").disabled=!sample;$("#stop").hidden=true;st.hidden=true;ctl=null}
+};
+
+/* ---------- deck view ---------- */
+const SECS=[["summary","Summary"],["story","Story"],["cards","Flashcards"],["quiz","Quiz"],["terms","Key Terms"],["tricks","Memory Tricks"],["practice","Written Practice"]];
+const JSONTAIL="\nReply with only one JSON object of this exact shape, plain text only, no emoji:\n";
+const GEN={
+  story:{ok:j=>Array.isArray(j.paragraphs)&&j.paragraphs.length,
+    p:"Explain the core ideas of the material as a short original story that a student will remember. Give it a clear setting and a few characters or objects that each stand for a key idea, so the plot itself carries the explanation. Write 5 to 7 short paragraphs, accurate to the material. Then provide a decoder that maps each story element to the real concept."+JSONTAIL+'{"title": string, "paragraphs": [string], "decoder": [{"story": string, "concept": string}]}'},
+  cards:{ok:j=>Array.isArray(j.cards)&&j.cards.length,
+    p:"Create 12 flashcards covering the most examinable points of the material. Fronts are specific questions or prompts. Backs are short, exact answers of at most two sentences."+JSONTAIL+'{"cards": [{"front": string, "back": string}]}'},
+  quiz:{ok:j=>Array.isArray(j.questions)&&j.questions.length,
+    p:"Write an 8 question multiple choice quiz on the material, from easier to harder. Each question has 4 plausible options with exactly one correct. Vary where the correct option sits. 'why' explains the correct answer in one or two sentences."+JSONTAIL+'{"questions": [{"q": string, "options": [string, string, string, string], "answer": integer 0 to 3, "why": string}]}'},
+  terms:{ok:j=>Array.isArray(j.terms)&&j.terms.length,
+    p:"List the 10 to 14 most important terms from the material with a clear, brief definition for each, in the order a student meets them."+JSONTAIL+'{"terms": [{"term": string, "meaning": string}]}'},
+  tricks:{ok:j=>Array.isArray(j.tricks)&&j.tricks.length,
+    p:"Create 6 memory techniques for the hardest points in the material: acronyms, rhymes, vivid images, chunking or comparison tricks. Say which point each one helps with."+JSONTAIL+'{"tricks": [{"topic": string, "kind": string, "trick": string}]}'},
+  practice:{ok:j=>Array.isArray(j.questions)&&j.questions.length,
+    p:"Write 5 written exam style questions on the material, mixing short answer and explain-why questions. For each give a model answer a student can compare against."+JSONTAIL+'{"questions": [{"q": string, "marks": integer, "model_answer": string}]}'}
+};
+
+let curDeck=null,curSec="summary",secCtl=null;
+function openDeck(id){
+  curDeck=state.decks.find(d=>d.id===id);if(!curDeck)return;
+  $("#home").hidden=true;const v=$("#deckview");v.hidden=false;v.replaceChildren();
+  let confirmDel=false;
+  const del=h("button",{class:"btn quiet",type:"button",onclick:()=>{
+    if(!confirmDel){confirmDel=true;del.textContent="Confirm delete";return}
+    state.decks=state.decks.filter(d=>d.id!==curDeck.id);save();closeDeck()}},"Delete deck");
+  v.append(
+    h("div",{class:"deck-top"},h("button",{class:"btn",type:"button",onclick:closeDeck},"Back to drawer"),del),
+    h("h2",{class:"deck-title",text:curDeck.title}),
+    h("span",{class:"mono",style:"color:var(--ink-2)",text:curDeck.subject||"Deck"}),
+    h("div",{class:"sections",role:"tablist",id:"secs"}),
+    h("div",{class:"panel",id:"panel",role:"tabpanel"}));
+  const bar=$("#secs");
+  for(const [k,l] of SECS)bar.append(h("button",{class:"sec",role:"tab","data-k":k,onclick:()=>showSec(k)},l));
+  showSec("summary");window.scrollTo({top:0});
+}
+function closeDeck(){if(secCtl)secCtl.abort();curDeck=null;$("#deckview").hidden=true;$("#home").hidden=false;paintDecks();paintStats()}
+
+function showSec(k){
+  if(secCtl)secCtl.abort();
+  curSec=k;
+  document.querySelectorAll(".sec").forEach(b=>b.setAttribute("aria-selected",String(b.dataset.k===k)));
+  const panel=$("#panel");panel.replaceChildren();
+  const data=curDeck.sections[k];
+  if(data){renderSec(k,panel,data);return}
+  generate(k,panel);
+}
+async function generate(k,panel){
+  const label=SECS.find(s=>s[0]===k)[1];
+  panel.replaceChildren();
+  if(!sample){panel.append(h("p",{text:"Claude is not connected in this view, so this section cannot be generated."}));return}
+  secCtl=new AbortController();const mine=secCtl;const deck=curDeck;
+  panel.append(h("div",{class:"loading"},h("p",{class:"mono",text:"Preparing "+label}),h("div",{class:"bar"},h("i")),
+    h("button",{class:"btn quiet",type:"button",onclick:()=>mine.abort()},"Stop")));
+  try{
+    const g=GEN[k];
+    const r=await ask("Study material:\n---\n"+deck.transcript.slice(0,60000)+"\n---\n\n"+g.p,{signal:mine.signal});
+    if(!r||typeof r!=="object"||!g.ok(r))throw {code:"invalid_json"};
+    deck.sections[k]=r;save();
+    if(curDeck===deck&&curSec===k){panel.replaceChildren();renderSec(k,panel,r)}
+  }catch(e){
+    if(curDeck!==deck||curSec!==k)return;
+    panel.replaceChildren();
+    if(e&&e.code==="cancelled"){panel.append(h("p",{text:"Stopped."}),h("button",{class:"btn",type:"button",onclick:()=>generate(k,panel)},"Generate "+label))}
+    else panel.append(h("div",{class:"err",role:"alert",text:errText(e)}),h("div",{class:"regen"},h("button",{class:"btn",type:"button",onclick:()=>generate(k,panel)},"Try again")));
+  }
+}
+function regenBtn(k,panel){
+  return h("div",{class:"regen"},h("button",{class:"btn quiet",type:"button",onclick:()=>{delete curDeck.sections[k];if(k==="cards")curDeck.known={};if(k==="quiz")curDeck.quiz={};save();generate(k,panel)}},"Regenerate this section"));
+}
+function renderSec(k,panel,d){
+  ({summary:rSummary,story:rStory,cards:rCards,quiz:rQuiz,terms:rTerms,tricks:rTricks,practice:rPractice})[k](panel,d);
+  if(k!=="summary")panel.append(regenBtn(k,panel));
+}
+function rSummary(p,d){
+  p.append(h("p",{class:"lede",text:d.overview}),
+    h("h3",{text:"Key points"}),
+    h("ul",{class:"points"},d.key_points.map(t=>h("li",{text:t}))),
+    d.takeaway&&h("div",{class:"callout"},h("span",{class:"mono",text:"Remember this"}),h("p",{text:d.takeaway})));
+}
+function rStory(p,d){
+  p.append(h("div",{class:"story"},h("h3",{text:d.title||"The story"}),d.paragraphs.map(t=>h("p",{text:t}))));
+  if(Array.isArray(d.decoder)&&d.decoder.length){
+    p.append(h("div",{class:"decoder"},h("span",{class:"mono",style:"color:var(--ink-2)",text:"Story decoder"}),
+      d.decoder.map(x=>h("div",{class:"pair"},h("span",{text:x.story}),h("span",{text:x.concept})))));
+  }
+}
+function rTerms(p,d){p.append(h("dl",{class:"terms"},d.terms.map(t=>h("div",{},h("dt",{text:t.term}),h("dd",{text:t.meaning})))))}
+function rTricks(p,d){p.append(d.tricks.map(t=>h("div",{class:"trick"},h("span",{class:"mono",text:[t.kind,t.topic].filter(Boolean).join("  /  ")}),h("p",{text:t.trick}))))}
+function rPractice(p,d){
+  d.questions.forEach((q,i)=>{
+    const ta=h("textarea",{id:"pa"+i,"aria-label":"Your answer to question "+(i+1),placeholder:"Write your answer first, then compare."});
+    const model=h("div",{class:"model",hidden:true},h("span",{class:"mono",style:"color:var(--ink-2)",text:"Model answer"}),h("p",{style:"margin:6px 0 0",text:q.model_answer}));
+    const b=h("button",{class:"btn",type:"button",onclick:()=>{model.hidden=!model.hidden;b.textContent=model.hidden?"Show model answer":"Hide model answer";if(!curDeck.pr)curDeck.pr={};
+      if(!model.hidden&&ta.value.trim().length>20&&!curDeck.pr[i]){curDeck.pr[i]=1;save();award(8)}}},"Show model answer");
+    p.append(h("div",{class:"pq"},h("span",{class:"mono",style:"color:var(--ink-2)",text:"Question "+(i+1)+(q.marks?"  /  "+q.marks+" marks":"")}),h("p",{style:"font-weight:600;margin-top:6px",text:q.q}),ta,b,model));
+  });
+}
+function rCards(p,d){
+  const cards=d.cards;let i=0,flip=false;
+  const box=h("div");p.append(box);
+  function draw(){
+    const c=cards[i],known=!!curDeck.known[i];
+    const nKnown=Object.keys(curDeck.known).length;
+    box.replaceChildren(
+      h("div",{class:"fc-count mono",text:"Card "+(i+1)+" of "+cards.length+"  /  "+nKnown+" known"}),
+      h("div",{class:"fc"},h("button",{class:"fc-face"+(flip?" back":""),type:"button","aria-label":flip?"Showing answer. Press to see the question.":"Showing question. Press to reveal the answer.",onclick:()=>{flip=!flip;draw()}},
+        h("div",{},h("span",{class:"mono",text:flip?"Answer":"Question"}),h("span",{class:"txt",text:flip?c.back:c.front})))),
+      known&&h("div",{class:"fc-known mono",text:"Marked as known"}),
+      h("div",{class:"row",style:"margin-top:12px"},
+        h("button",{class:"btn",type:"button",disabled:i===0,onclick:()=>{i--;flip=false;draw()}},"Previous"),
+        h("button",{class:"btn",type:"button",onclick:()=>{flip=!flip;draw()}},flip?"Show question":"Flip"),
+        h("button",{class:"btn",type:"button",onclick:()=>{if(!curDeck.known[i]){curDeck.known[i]=1;save();award(5)}if(i<cards.length-1)i++;flip=false;draw()}},"Got it"),
+        h("button",{class:"btn",type:"button",disabled:i===cards.length-1,onclick:()=>{i++;flip=false;draw()}},"Next")));
+  }
+  draw();
+}
+function rQuiz(p,d){
+  const qs=d.questions;let i=0,score=0,picked=null;const box=h("div");p.append(box);
+  function draw(){
+    if(i>=qs.length){
+      if(!curDeck.qDone){curDeck.qDone=1;save();award(25)}
+      box.replaceChildren(h("span",{class:"mono",style:"color:var(--ink-2)",text:"Quiz complete"}),
+        h("div",{class:"score",text:score+" / "+qs.length}),
+        h("p",{text:score===qs.length?"Perfect round.":score>=qs.length*0.7?"Strong result. Review the questions you missed.":"Worth another pass through the flashcards before you retry."}),
+        h("button",{class:"btn",type:"button",onclick:()=>{i=0;score=0;picked=null;draw()}},"Retake quiz"));return}
+    const q=qs[i];
+    const opts=h("div",{class:"opts",role:"group","aria-label":"Answer options"},q.options.map((o,j)=>{
+      const cls=picked===null?"":j===q.answer?" right":j===picked?" wrong":"";
+      return h("button",{class:"opt"+cls,type:"button",disabled:picked!==null,onclick:()=>{
+        picked=j;if(j===q.answer){score++;if(!curDeck.quiz[i]){curDeck.quiz[i]=1;save();award(10)}}draw()}},
+        h("b",{text:"ABCD"[j]}),h("span",{text:o}));
+    }));
+    box.replaceChildren(h("span",{class:"mono",style:"color:var(--ink-2)",text:"Question "+(i+1)+" of "+qs.length+"  /  Score "+score}),
+      h("div",{class:"q-text",text:q.q}),opts,
+      picked!==null&&h("div",{class:"why"},h("b",{text:picked===q.answer?"Correct. ":"Not quite. "}),q.why),
+      picked!==null&&h("div",{class:"row",style:"margin-top:16px"},h("button",{class:"btn",type:"button",onclick:()=>{i++;picked=null;draw()}},i===qs.length-1?"See score":"Next question")));
+  }
+  draw();
+}
+
+/* ---------- coach ---------- */
+const coach={mode:"Homework",act:null,turns:[],u:0,a:0,busy:false,ctl:null};
+const thread=$("#thread"),cin=$("#c-in");
+document.querySelectorAll("#modes .chip").forEach(b=>b.addEventListener("click",()=>{
+  document.querySelectorAll("#modes .chip").forEach(x=>x.setAttribute("aria-pressed",String(x===b)));coach.mode=b.textContent}));
+const PH={"Hint":"Say where you are stuck. I will give you one small nudge.","Example":"Say what you are trying to do. I will show a similar example on another topic.","Check My Work":"Paste what you have written so far.","Improve My Idea":"Describe your idea in your own words."};
+document.querySelectorAll("#acts .chip").forEach(b=>b.addEventListener("click",()=>{
+  const on=b.getAttribute("aria-pressed")!=="true";
+  document.querySelectorAll("#acts .chip").forEach(x=>x.setAttribute("aria-pressed","false"));
+  b.setAttribute("aria-pressed",String(on));coach.act=on?b.dataset.act:null;
+  cin.placeholder=on?PH[coach.act]:"Tell me what you want to do...";cin.focus()}));
+function paintPct(){
+  const t=coach.u+coach.a,p=t?Math.round(coach.u/t*100):0;
+  $("#pct").textContent=p+"%";$("#pct-bar").style.width=p+"%";
+}
+const RULES=mode=>"You are a patient coach helping a student with their "+mode.toLowerCase()+". The student must do the work themselves. Never write their assignment, essay paragraphs, speech lines, slide text, or final answers for them, even if asked directly; explain briefly that you will coach instead, then coach.\n"+
+"How to respond to each request type:\n- Hint: give one small nudge toward the next step, never the answer.\n- Example: show a short example of the technique on a different topic, then ask the student to apply it to theirs.\n- Check My Work: say what already works, then name up to three specific problems quoting short pieces of their text, and say how to fix each without rewriting it for them.\n- Improve My Idea: ask two sharp questions and suggest two directions to consider.\n- No type given: respond helpfully as a coach, asking what they have tried.\n"+
+"Keep every reply under 130 words. Plain text only: no markdown, no bullet symbols, no emoji. End with one concrete next step for the student to write themselves.";
+function bubble(cls,who,text){const m=h("div",{class:"msg "+cls},h("span",{class:"who",text:who}),h("span",{class:"body",text:text}));thread.append(m);m.scrollIntoView({block:"nearest",behavior:"smooth"});return m}
+$("#c-stop").onclick=()=>coach.ctl&&coach.ctl.abort();
+$("#c-send").onclick=async()=>{
+  if(coach.busy||!sample)return;
+  const text=cin.value.trim(),err=$("#c-err");showErr(err,"");
+  if(!text){showErr(err,"Write a few words about what you are working on first.");return}
+  const act=coach.act;
+  coach.turns.push({role:"user",content:(act?"[Request type: "+act+"] ":"")+text});
+  coach.u+=words(text);paintPct();
+  bubble("me","You"+(act?"  /  "+act:""),text);
+  cin.value="";
+  document.querySelectorAll("#acts .chip").forEach(x=>x.setAttribute("aria-pressed","false"));coach.act=null;cin.placeholder="Tell me what you want to do...";
+  const out=bubble("ai","Coach","Thinking...");
+  coach.busy=true;$("#c-send").disabled=true;$("#c-stop").hidden=false;coach.ctl=new AbortController();
+  const turns=coach.turns.slice(-12);
+  if(turns[0].role!=="user")turns.shift();
+  const input=[{role:"user",content:RULES(coach.mode)},...turns];
+  try{
+    const r=await sample(input,{cache:false,modelTier:"default",signal:coach.ctl.signal,onText:({text})=>{out.querySelector(".body").textContent=text}});
+    out.querySelector(".body").textContent=r.text;
+    coach.turns.push({role:"assistant",content:r.text});coach.a+=words(r.text);paintPct();
+  }catch(e){
+    coach.turns.pop();
+    if(e&&e.text){out.querySelector(".body").textContent=e.text}else out.remove();
+    if(!e||e.code!=="cancelled")showErr(err,errText(e));
+  }finally{coach.busy=false;$("#c-send").disabled=!sample;$("#c-stop").hidden=true;coach.ctl=null}
+};
+$("#c-reset").onclick=()=>{if(coach.ctl)coach.ctl.abort();coach.turns=[];coach.u=0;coach.a=0;thread.replaceChildren();paintPct();showErr($("#c-err"),"")};
+
+/* ---------- boot ---------- */
+paintStats();paintDecks();paintPct();setMode("type");
+setView(location.hash.slice(1));
+})();
+</script>
+
+</body></html>
